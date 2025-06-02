@@ -11,18 +11,24 @@
     "test": "c8 mocha test",
     "fix": "eslint --fix '**/*.js'",
     "lint": "eslint '**/*.js'",
-    "register": "node --experimental-strip-types src/register.ts",
-    "publish": "wrangler deploy"
+    "register": "node --experimental-strip-types src/cli/register.ts",
+    "clear": "node --experimental-strip-types src/cli/clear.ts",
+    "publish": "wrangler deploy",
+    "fmt": "dprint fmt"
   },
   "keywords": [],
   "author": "Justin Beckwith <justin.beckwith@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@discordjs/rest": "^2.5.0",
+    "discord-api-types": "^0.38.10",
     "discord-interactions": "^4.0.0",
+    "dprint": "^0.50.0",
     "itty-router": "^5.0.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
+    "@kaplayjs/dprint-config": "^1.2.0",
     "c8": "^10.1.2",
     "chai": "^5.0.0",
     "dotenv": "^16.0.3",
