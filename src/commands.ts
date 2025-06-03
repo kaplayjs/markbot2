@@ -1,11 +1,11 @@
 import type { RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord-api-types/v10";
 
-export const AWW_COMMAND: RESTPostAPIChatInputApplicationCommandsJSONBody = {
+export const KAT_CMD: RESTPostAPIChatInputApplicationCommandsJSONBody = {
     name: "kat",
     description: "Get a cute cat gif.",
 };
 
-export const INVITE_COMMAND: RESTPostAPIChatInputApplicationCommandsJSONBody = {
-    name: "invite",
-    description: "Get an invite link to add the bot to your server",
+export const ABOUT_CMD: RESTPostAPIChatInputApplicationCommandsJSONBody = {
+    name: "about",
+    description: "About this bot.",
 };

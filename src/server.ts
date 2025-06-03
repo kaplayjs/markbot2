@@ -3,17 +3,21 @@
  */
 
 import {
+    type APIInteractionResponse,
+    APIInteractionResponseChannelMessageWithSource,
     InteractionResponseType,
     InteractionType,
-    verifyKey,
-} from "discord-interactions";
-import { InteractionResponseFlags } from "discord-interactions";
+} from "discord-api-types/v10";
+import { verifyKey } from "discord-interactions";
 import { AutoRouter } from "itty-router";
-import { AWW_COMMAND, INVITE_COMMAND } from "./commands.js";
-import { getCuteUrl } from "./reddit.js";
+import { ABOUT_CMD, KAT_CMD } from "./commands.js";
+import { getCuteCatUrl } from "./reddit.js";
 
 class JsonResponse extends Response {
-    constructor(body: any, init?: ResponseInit | undefined) {
+    constructor(
+        body: APIInteractionResponse | { error: string },
+        init?: ResponseInit | undefined,
+    ) {
         const jsonBody = JSON.stringify(body);
 
         init = init || {
@@ -50,35 +54,36 @@ router.post("/", async (request, env) => {
         return new Response("Bad request signature.", { status: 401 });
     }
 
-    if (interaction.type === InteractionType.PING) {
+    if (interaction.type === InteractionType.Ping) {
         // The `PING` message is used during the initial webhook handshake, and is
         // required to configure the webhook in the developer portal.
         return new JsonResponse({
-            type: InteractionResponseType.PONG,
+            type: InteractionResponseType.Pong,
         });
     }
 
-    if (interaction.type === InteractionType.APPLICATION_COMMAND) {
+    if (interaction.type === InteractionType.ApplicationCommand) {
         // Most user commands will come as `APPLICATION_COMMAND`.
         switch (interaction.data.name.toLowerCase()) {
-            case AWW_COMMAND.name.toLowerCase(): {
-                const cuteUrl = await getCuteUrl();
+            case KAT_CMD.name.toLowerCase(): {
+                const cuteUrl = await getCuteCatUrl();
                 return new JsonResponse({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    type: InteractionResponseType.ChannelMessageWithSource,
                     data: {
                         content: cuteUrl,
                     },
                 });
             }
-            case INVITE_COMMAND.name.toLowerCase(): {
-                const applicationId = env.DISCORD_APPLICATION_ID;
-                const INVITE_URL =
-                    `https://discord.com/oauth2/authorize?client_id=${applicationId}&scope=applications.commands`;
+            case ABOUT_CMD.name.toLowerCase(): {
                 return new JsonResponse({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    type: InteractionResponseType.ChannelMessageWithSource,
                     data: {
-                        content: INVITE_URL,
-                        flags: InteractionResponseFlags.EPHEMERAL,
+                        embeds: [{
+                            description:
+                                "Hey! I'm KAPLAY server bot.\n\n I'm getting a rewrite so all my commands are currently not avaible, lajbel is going to work on it very soon! (doubt it)",
+                            color: 0xfcef8d,
+                            author: { name: "MarkBot" },
+                        }],
                     },
                 });
             }
