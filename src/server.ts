@@ -150,7 +150,7 @@ router.post("/", async (request, env) => {
                 const names = await (await fetch(
                     `https://${
                         version == "v4000" ? "v4000" : ""
-                    }kaplayjs.com/api/doc/names.json`,
+                    }.kaplayjs.com/api/doc/names.json`,
                 )).json() as string[];
 
                 let apiQuery = "";
