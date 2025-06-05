@@ -289,7 +289,7 @@ router.post("/", async (request, env) => {
                                 : description,
                             color: 0xabdd64,
                             footer: {
-                                text: `Provided by ${kaplayUrl("/", version)}`,
+                                text: `Provided by ${kaplayUrl("", version)}`,
                                 icon_url: "https://kaplayjs.com/favicon.png",
                             },
                         }],
