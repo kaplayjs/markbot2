@@ -14,7 +14,7 @@ import {
 import { verifyKey } from "discord-interactions";
 import { AutoRouter } from "itty-router";
 import { ABOUT_CMD, API_CMD, KAT_CMD } from "./commands.js";
-import { getCuteCatUrl } from "./reddit.js";
+import { apiUrl, getCuteCatUrl } from "./reddit.js";
 
 class JsonResponse extends Response {
     constructor(
@@ -57,6 +57,9 @@ router.get("/", (request, env) => {
     console.log(env);
     return new Response(`👋 ${env.DISCORD_APPLICATION_ID}`);
 });
+
+const kaplayUrl = (url: string, v: string) =>
+    `https://${v == "v4000" ? "v4000." : ""}kaplayjs.com/${url}`;
 
 /**
  * Main route for all requests sent from Discord.  All incoming messages will
@@ -148,9 +151,7 @@ router.post("/", async (request, env) => {
                 }
 
                 const names = await (await fetch(
-                    `https://${
-                        version == "v4000" ? "v4000" : ""
-                    }.kaplayjs.com/api/doc/names.json`,
+                    kaplayUrl("api/doc/names.json", version),
                 )).json() as string[];
 
                 let apiQuery = "";
@@ -185,9 +186,7 @@ router.post("/", async (request, env) => {
                     `Query: ${apiQuery}, Specific: ${querySpecific}, Version: ${version}`,
                 );
 
-                const url = version === "v3001"
-                    ? `https://kaplayjs.com/api/doc/${apiQuery}.json`
-                    : `https://v4000.kaplayjs.com/api/doc/${apiQuery}.json`;
+                const url = kaplayUrl(`api/doc/${apiQuery}`, version);
 
                 const data = await (await fetch(url))
                     .json() as DocEntryData[];
@@ -199,8 +198,8 @@ router.post("/", async (request, env) => {
                     children?: boolean,
                 ) => {
                     let url = apiQuery.startsWith("ctx.")
-                        ? `https://kaplayjs.com/doc/ctx/${apiQuery}`
-                        : `https://kaplayjs.com/doc/${apiQuery}`;
+                        ? kaplayUrl(`doc/ctx/${apiQuery}`, version)
+                        : kaplayUrl(`doc/${apiQuery}`, version);
 
                     if (children) {
                         url += `#${apiQuery}-${entry.name}`;
@@ -290,7 +289,7 @@ router.post("/", async (request, env) => {
                                 : description,
                             color: 0xabdd64,
                             footer: {
-                                text: "Provided by https://kaplayjs.com",
+                                text: `Provided by ${kaplayUrl("/", version)}`,
                                 icon_url: "https://kaplayjs.com/favicon.png",
                             },
                         }],
