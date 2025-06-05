@@ -150,9 +150,12 @@ router.post("/", async (request, env) => {
                     querySpecific = queryParts.pop() || "";
                 }
 
-                const names = await (await fetch(
-                    kaplayUrl("api/doc/names.json", version),
-                )).json() as string[];
+                const namesUrl = kaplayUrl(
+                    "api/doc/names.json",
+                    version,
+                );
+
+                const names = await (await fetch(namesUrl)).json() as string[];
 
                 let apiQuery = "";
 
@@ -182,11 +185,7 @@ router.post("/", async (request, env) => {
                     });
                 }
 
-                console.log(
-                    `Query: ${apiQuery}, Specific: ${querySpecific}, Version: ${version}`,
-                );
-
-                const url = kaplayUrl(`api/doc/${apiQuery}`, version);
+                const url = kaplayUrl(`api/doc/${apiQuery}.json`, version);
 
                 const data = await (await fetch(url))
                     .json() as DocEntryData[];
