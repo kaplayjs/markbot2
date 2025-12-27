@@ -4,8 +4,11 @@
 
 import {
     type APIApplicationCommandInteraction,
+    APIApplicationCommandInteractionDataOption,
+    APIApplicationCommandInteractionDataUserOption,
     type APIInteractionResponse,
     type APIPingInteraction,
+    ApplicationCommandOptionType,
     ComponentType,
     InteractionResponseType,
     InteractionType,
@@ -13,8 +16,9 @@ import {
 } from "discord-api-types/v10";
 import { verifyKey } from "discord-interactions";
 import { AutoRouter } from "itty-router";
-import { ABOUT_CMD, API_CMD, KAT_CMD } from "./commands.js";
+import { ABOUT_CMD, API_CMD, HELPEDBY_CMD, KAT_CMD } from "./commands.js";
 import { apiUrl, getCuteCatUrl } from "./reddit.js";
+import { getDB } from "./db.js";
 
 class JsonResponse extends Response {
     constructor(
@@ -205,9 +209,8 @@ router.post("/", async (request, env) => {
                     }
 
                     const headingLevel = children ? "##" : "#";
-                    description += `${headingLevel} ${
-                        entry.title.replace(/\n/g, "").trim()
-                    }\n`;
+                    description += `${headingLevel} ${entry.title.replace(/\n/g, "").trim()
+                        }\n`;
                     description += `${entry.description || ""}\n\n`;
 
                     if (entry.tags) {
@@ -295,6 +298,172 @@ router.post("/", async (request, env) => {
                     },
                 });
             }
+            case HELPEDBY_CMD.name.toLocaleLowerCase(): {
+                if (interaction.data.type != 1) return;
+
+                const helpSubcommand = interaction.data.options?.find(
+                    (o) => o.name === "help",
+                );
+
+                if (helpSubcommand) {
+                    return new JsonResponse({
+                        type: InteractionResponseType.ChannelMessageWithSource,
+                        data: {
+                            embeds: [{
+                                title: `HelpedBy:tm:`,
+                                description: "**HelpedBy:tm:** is a **MarkBot:tm:** system to reward the people who help you in <#883782079802908772> channel! Helping others is helping yourself. \n\nTo start rewarding the people who help you, you can use: \n\n `/helped by member:@MF`\n\n Also, you can see your profile or anyone's with: \n\n`/helped profile member:@lajbel`",
+                                color: 0xabdd64,
+                                footer: {
+                                    text: "/helped help to display this message again."
+                                }
+                            }],
+                        },
+                    });
+                }
+
+                const bySubcommand = interaction.data.options?.find(
+                    (o) => o.name === "by" && o.type === ApplicationCommandOptionType.Subcommand,
+                );
+
+                if (bySubcommand && bySubcommand.type === ApplicationCommandOptionType.Subcommand) {
+                    const db = getDB(env.SUPABASE_KEY);
+                    const member = bySubcommand.options?.find(
+                        (o) => o.name === "member",
+                    ) as APIApplicationCommandInteractionDataUserOption
+                    const givenPoints = 1;
+
+                    const { data, error } = await db.rpc('give_points', {
+                        p_from_user: interaction.member?.user.id!,
+                        p_to_user: member.value,
+                        p_points: givenPoints,
+                    })
+
+                    const resolvedUsers = interaction.data.resolved?.users!
+                    const userToData = resolvedUsers[member.value]
+
+                    if (error) {
+                        switch (error.code) {
+                            case "P0001":
+                                return new JsonResponse({
+                                    type: InteractionResponseType.ChannelMessageWithSource,
+                                    data: {
+                                        embeds: [{
+                                            title: `Error!`,
+                                            description: `You can't give HelpPoints:tm: to yourself!`,
+                                            color: 0xdd0000,
+                                        }],
+                                    },
+                                });
+                            default:
+                                return new JsonResponse({
+                                    type: InteractionResponseType.ChannelMessageWithSource,
+                                    data: {
+                                        embeds: [{
+                                            title: `Error!`,
+                                            description: "Uknown Error.",
+                                            color: 0xdd0000,
+                                        }],
+                                    },
+                                });
+                        }
+                    } else {
+                        return new JsonResponse({
+                            type: InteractionResponseType.ChannelMessageWithSource,
+                            data: {
+                                embeds: [{
+                                    title: `${userToData.global_name ?? userToData.username} helped ${interaction.member?.user.global_name ?? interaction.member?.user.username}!`,
+                                    description: `<@${interaction.member?.user.id}> rewarded <@${member.value}> with **${givenPoints} HelpPoint:tm:**. Now <@${member.value}> ascends to ${data[0].to_total} HelpPoints.`,
+                                    color: 0xabdd64,
+                                    thumbnail: {
+                                        url: `https://cdn.discordapp.com/avatars/${userToData.id}/${userToData.avatar}.png`,
+                                    }
+                                }],
+                            },
+                        });
+                    }
+                }
+
+                const profileSubcommand = interaction.data.options?.find(
+                    (o) => o.name === "profile" && o.type === ApplicationCommandOptionType.Subcommand,
+                );
+
+                if (profileSubcommand && profileSubcommand.type === ApplicationCommandOptionType.Subcommand) {
+                    const db = getDB(env.SUPABASE_KEY);
+                    const member = profileSubcommand.options?.find(
+                        (o) => o.name === "member",
+                    ) as APIApplicationCommandInteractionDataUserOption
+                    const resolvedUsers = interaction.data.resolved?.users!
+                    const userToData = resolvedUsers[member.value]
+
+                    const { data, error } = await db.rpc("get_user_profile", {
+                        p_user_id: userToData.id,
+                    })
+
+                    console.log(error)
+
+                    if (data?.length! < 1) {
+                        return new JsonResponse({
+                            type: InteractionResponseType.ChannelMessageWithSource,
+                            data: {
+                                embeds: [{
+                                    title: `Error!`,
+                                    description: `User <@${member.value}> hasn't used HelpedBy:tm: system!`,
+                                    color: 0xdd0000,
+                                }],
+                            },
+                        });
+                    }
+
+                    const rank = data?.[0].rank ?? "UNKNOWN";
+                    const totalPoints = data?.[0].total_points ?? 0;
+                    const givenPoints = data?.[0].given_points ?? 0;
+
+                    return new JsonResponse({
+                        type: InteractionResponseType.ChannelMessageWithSource,
+                        data: {
+                            embeds: [{
+                                title: `${userToData.global_name ?? userToData.username}'s HelpedBy:tm: Profile`,
+                                description: `\n- **Obtained HelpPoints:tm:: ${totalPoints}**\n- **Given HelpPoints:tm:: ${givenPoints}**`,
+                                color: 0xabdd64,
+                                thumbnail: {
+                                    url: `https://cdn.discordapp.com/avatars/${userToData.id}/${userToData.avatar}.png`,
+                                },
+                                footer: {
+                                    text: `Top #${rank} in the server`
+                                }
+                            }],
+                        },
+                    });
+                }
+
+                const leaderboardSubcommand = interaction.data.options?.find(
+                    (o) => o.name === "leaderboard",
+                );
+
+                if (leaderboardSubcommand && leaderboardSubcommand.type === ApplicationCommandOptionType.Subcommand) {
+                    const db = getDB(env.SUPABASE_KEY);
+
+                    const { data, error } = await db
+                        .rpc("get_leaderboard")
+
+                    if (error) {
+                        console.error('RPC error:', error)
+                    } else {
+                        return new JsonResponse({
+                            type: InteractionResponseType.ChannelMessageWithSource,
+                            data: {
+                                embeds: [{
+                                    title: `Obtained HelpPoints:tm: Scoreboard`,
+                                    description: `${data.map((usr) => `- **#${usr.rank}** - <@${usr.user_id}> with **${usr.total_points}** HelpPoints:tm:`).join("\n")}`,
+                                    color: 0xabdd64,
+                                }],
+                            },
+                        });
+                    }
+                }
+
+
+            }
             default:
                 return new JsonResponse({ error: "Unknown Type" }, {
                     status: 400,
@@ -305,6 +474,7 @@ router.post("/", async (request, env) => {
     console.error("Unknown Type");
     return new JsonResponse({ error: "Unknown Type" }, { status: 400 });
 });
+
 router.all("*", () => new Response("Not Found.", { status: 404 }));
 
 async function verifyDiscordRequest(request, env) {

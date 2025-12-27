@@ -14,13 +14,15 @@
     "register": "node --experimental-strip-types src/cli/register.ts",
     "clear": "node --experimental-strip-types src/cli/clear.ts",
     "publish": "wrangler deploy",
-    "fmt": "dprint fmt"
+    "fmt": "dprint fmt",
+    "db:gentypes": "npx supabase gen types typescript --project-id jlhwsrgsgdubxtcgieli --schema public > src/types/database.types.ts"
   },
   "keywords": [],
   "author": "lajbel",
   "license": "MIT",
   "dependencies": {
     "@discordjs/rest": "^2.5.0",
+    "@supabase/supabase-js": "^2.89.0",
     "discord-api-types": "^0.38.10",
     "discord-interactions": "^4.0.0",
     "dprint": "^0.50.0",
@@ -40,6 +42,8 @@
     "ngrok": "^5.0.0-beta.2",
     "prettier": "^3.2.5",
     "sinon": "^20.0.0",
+    "supabase": "^2.70.5",
     "wrangler": "^4.13.2"
-  }
+  },
+  "packageManager": "pnpm@10.17.0+sha512.fce8a3dd29a4ed2ec566fb53efbb04d8c44a0f05bc6f24a73046910fb9c3ce7afa35a0980500668fa3573345bd644644fa98338fa168235c80f4aa17aa17fbef"
 }

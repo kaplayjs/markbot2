@@ -42,3 +42,43 @@ export const API_CMD: RESTPostAPIChatInputApplicationCommandsJSONBody = {
         },
     ],
 };
+
+export const HELPEDBY_CMD: RESTPostAPIChatInputApplicationCommandsJSONBody = {
+    name: "helped",
+    description: "Mark that someone helped you with a task in KAPLAY.",
+    options: [
+        {
+            name: "by",
+            description: "Reward someone who helped you.",
+            type: ApplicationCommandOptionType.Subcommand,
+            options: [{
+                name: "member",
+                description: "The member who helped you.",
+                type: ApplicationCommandOptionType.User,
+                required: true,
+            }]
+        },
+        {
+            name: "profile",
+            description: "Check rewards profile from someone or yours.",
+            type: ApplicationCommandOptionType.Subcommand,
+            options: [{
+                name: "member",
+                description: "Member to check.",
+                type: ApplicationCommandOptionType.User,
+                required: true,
+            }]
+        },
+        {
+            name: "help",
+            description: "Receive info about HelpedBy iniciative.",
+            type: ApplicationCommandOptionType.Subcommand,
+        },
+        {
+            name: "leaderboard",
+            description: "Get the HelpPoints scoreboard.",
+            type: ApplicationCommandOptionType.Subcommand,
+        },
+
+    ],
+};
