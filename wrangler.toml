@@ -1,6 +1,21 @@
 name = "markbot"
 main = "./src/server.ts"
-compatibility_date = "2023-05-18"
+compatibility_date = "2024-09-23"
+
+[triggers]
+crons = ["* * * * *"]
+
+[vars]
+WELCOME_GUILD_ID = "883781994583056384"
+WELCOME_CHANNEL_ID = "926198028061253672"
+
+[[durable_objects.bindings]]
+name = "WELCOME_GATEWAY"
+class_name = "WelcomeGateway"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["WelcomeGateway"]
 
 # [secrets]
 # DISCORD_TOKEN

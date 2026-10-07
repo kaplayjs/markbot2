@@ -22,7 +22,7 @@ import { getDB } from "./db.js";
 
 class JsonResponse extends Response {
     constructor(
-        body: APIInteractionResponse | { error: string },
+        body: APIInteractionResponse | { error: string; },
         init?: ResponseInit | undefined,
     ) {
         const jsonBody = JSON.stringify(body);
@@ -57,8 +57,10 @@ type DocEntryData = {
 /**
  * A simple :wave: hello page to verify the worker is working.
  */
-router.get("/", (request, env) => {
-    console.log(env);
+router.get("/", async (request, env) => {
+    // Also wakes the welcome gateway (cron doesn't run in `wrangler dev`).
+    await env.WELCOME_GATEWAY.get(env.WELCOME_GATEWAY.idFromName("main"))
+        .fetch("https://welcome/");
     return new Response(`👋 ${env.DISCORD_APPLICATION_ID}`);
 });
 
@@ -329,17 +331,17 @@ router.post("/", async (request, env) => {
                     const db = getDB(env.SUPABASE_KEY);
                     const member = bySubcommand.options?.find(
                         (o) => o.name === "member",
-                    ) as APIApplicationCommandInteractionDataUserOption
+                    ) as APIApplicationCommandInteractionDataUserOption;
                     const givenPoints = 1;
 
                     const { data, error } = await db.rpc('give_points', {
                         p_from_user: interaction.member?.user.id!,
                         p_to_user: member.value,
                         p_points: givenPoints,
-                    })
+                    });
 
-                    const resolvedUsers = interaction.data.resolved?.users!
-                    const userToData = resolvedUsers[member.value]
+                    const resolvedUsers = interaction.data.resolved?.users!;
+                    const userToData = resolvedUsers[member.value];
 
                     if (error) {
                         switch (error.code) {
@@ -391,15 +393,15 @@ router.post("/", async (request, env) => {
                     const db = getDB(env.SUPABASE_KEY);
                     const member = profileSubcommand.options?.find(
                         (o) => o.name === "member",
-                    ) as APIApplicationCommandInteractionDataUserOption
-                    const resolvedUsers = interaction.data.resolved?.users!
-                    const userToData = resolvedUsers[member.value]
+                    ) as APIApplicationCommandInteractionDataUserOption;
+                    const resolvedUsers = interaction.data.resolved?.users!;
+                    const userToData = resolvedUsers[member.value];
 
                     const { data, error } = await db.rpc("get_user_profile", {
                         p_user_id: userToData.id,
-                    })
+                    });
 
-                    console.log(error)
+                    console.log(error);
 
                     if (data?.length! < 1) {
                         return new JsonResponse({
@@ -444,10 +446,10 @@ router.post("/", async (request, env) => {
                     const db = getDB(env.SUPABASE_KEY);
 
                     const { data, error } = await db
-                        .rpc("get_leaderboard")
+                        .rpc("get_leaderboard");
 
                     if (error) {
-                        console.error('RPC error:', error)
+                        console.error('RPC error:', error);
                     } else {
                         return new JsonResponse({
                             type: InteractionResponseType.ChannelMessageWithSource,
@@ -504,6 +506,12 @@ async function verifyDiscordRequest(request, env) {
 const server = {
     verifyDiscordRequest,
     fetch: router.fetch,
+    // Cron trigger: makes sure the welcome gateway connection is alive.
+    async scheduled(_event: unknown, env: any) {
+        await env.WELCOME_GATEWAY.get(env.WELCOME_GATEWAY.idFromName("main"))
+            .fetch("https://welcome/");
+    },
 };
 
+export { WelcomeGateway } from "./welcome.js";
 export default server;
