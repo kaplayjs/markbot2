@@ -15,7 +15,7 @@ class_name = "WelcomeGateway"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["WelcomeGateway"]
+new_sqlite_classes = ["WelcomeGateway"]
 
 # [secrets]
 # DISCORD_TOKEN

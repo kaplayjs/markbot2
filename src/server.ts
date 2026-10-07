@@ -107,7 +107,7 @@ router.post("/", async (request, env) => {
                     data: {
                         embeds: [{
                             description:
-                                "Hey! I'm KAPLAY server bot.\n\n I'm getting a rewrite so all my commands are currently not avaible, lajbel is going to work on it very soon! (doubt it)",
+                                "Hey! I'm KAPLAY server bot.",
                             color: 0xfcef8d,
                             author: { name: "MarkBot" },
                         }],
