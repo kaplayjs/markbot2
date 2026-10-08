@@ -8,6 +8,7 @@ crons = ["* * * * *"]
 [vars]
 WELCOME_GUILD_ID = "883781994583056384"
 WELCOME_CHANNEL_ID = "926198028061253672"
+WELCOME_GATEWAY_REVISION = "1"
 
 [[durable_objects.bindings]]
 name = "WELCOME_GATEWAY"
@@ -16,6 +17,21 @@ class_name = "WelcomeGateway"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["WelcomeGateway"]
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = false
+head_sampling_rate = 1
+persist = true
+
+[observability.issue_detection]
+enabled = false
+
 
 # [secrets]
 # DISCORD_TOKEN

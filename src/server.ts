@@ -59,9 +59,15 @@ type DocEntryData = {
  */
 router.get("/", async (request, env) => {
     // Also wakes the welcome gateway (cron doesn't run in `wrangler dev`).
-    await env.WELCOME_GATEWAY.get(env.WELCOME_GATEWAY.idFromName("main"))
+    const gateway = await env.WELCOME_GATEWAY.get(env.WELCOME_GATEWAY.idFromName("main"))
         .fetch("https://welcome/");
+    if (!gateway.ok) return gateway;
     return new Response(`👋 ${env.DISCORD_APPLICATION_ID}`);
+});
+
+router.get("/gateway/status", async (_request, env) => {
+    return env.WELCOME_GATEWAY.get(env.WELCOME_GATEWAY.idFromName("main"))
+        .fetch("https://welcome/");
 });
 
 const kaplayUrl = (url: string, v: string) =>
@@ -508,8 +514,11 @@ const server = {
     fetch: router.fetch,
     // Cron trigger: makes sure the welcome gateway connection is alive.
     async scheduled(_event: unknown, env: any) {
-        await env.WELCOME_GATEWAY.get(env.WELCOME_GATEWAY.idFromName("main"))
+        const response = await env.WELCOME_GATEWAY.get(env.WELCOME_GATEWAY.idFromName("main"))
             .fetch("https://welcome/");
+        if (!response.ok) {
+            console.warn("[gateway] cron status:", await response.text());
+        }
     },
 };
 

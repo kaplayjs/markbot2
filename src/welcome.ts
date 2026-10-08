@@ -84,6 +84,7 @@ export class WelcomeGateway extends DurableObject<Env> {
 
   private async supervise() {
     if (this.recovery.halted) {
+      console.error(`[gateway] blocked: ${this.recovery.error}. Correct the Discord configuration and increment WELCOME_GATEWAY_REVISION.`);
       await this.ctx.storage.deleteAlarm();
       return;
     }
@@ -102,7 +103,8 @@ export class WelcomeGateway extends DurableObject<Env> {
     }
     if (this.ws || Date.now() < this.recovery.retryAt) return;
     if (!this.connecting) {
-      this.connecting = this.connect().catch(async () => {
+      this.connecting = this.connect().catch(async (error) => {
+        console.error("[gateway] connection attempt failed:", error);
         await this.scheduleReconnect("Gateway connection failed");
       }).finally(() => {
         this.connecting = null;
@@ -130,7 +132,8 @@ export class WelcomeGateway extends DurableObject<Env> {
       this.messages = this.messages.then(() =>
         this.onMessage(ws, event.data as string)
       )
-        .catch(async () => {
+        .catch(async (error) => {
+          console.error("[gateway] protocol handler failed:", error);
           await this.disconnect(ws, "Gateway protocol error");
         });
       this.ctx.waitUntil(this.messages);
