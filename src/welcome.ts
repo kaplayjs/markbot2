@@ -5,6 +5,7 @@ type Env = {
   WELCOME_GUILD_ID: string;
   WELCOME_CHANNEL_ID: string;
   WELCOME_GATEWAY_REVISION?: string;
+  WELCOME_TEST_COMMAND?: string;
 };
 
 type Session = { id: string; url: string; seq: number | null; };
@@ -296,7 +297,7 @@ export class WelcomeGateway extends DurableObject<Env> {
       const user = t === "GUILD_MEMBER_ADD"
         ? d.user
         : t === "MESSAGE_CREATE"
-          && d.content?.trim().toLowerCase() === "markbot.test.join"
+          && d.content?.trim().toLowerCase() === "preview.test.join"
           ? d.author
           : null;
       if (d.guild_id === this.env.WELCOME_GUILD_ID && user && !user.bot) {
@@ -327,7 +328,7 @@ export class WelcomeGateway extends DurableObject<Env> {
         body: JSON.stringify({
           content: `<@${userId}>`,
           embeds: [{
-            title: "ohhi",
+            title: `oh hi ${user.username}!`,
             // avatar author of newjoiner
             author: {
               name: user.username,
@@ -338,11 +339,21 @@ export class WelcomeGateway extends DurableObject<Env> {
               url: avatarUrl,
             },
             description:
-              `ohhi <@${userId}>!, welcome to the KAPLAY Discord Community, a place to talk arround KAPLAY, game development and other stuff I guess`,
+              `Welcome to the KAPLAY Discord Community, a place to talk about KAPLAY, game development and other stuff. Here are some tips <:mark:1271979122372907121>
+
+* Dealing with code? Ask for <#883782079802908772>!
+* Talk around in <#883781995384152137>
+* Want to contribute? <#883782527809122367>
+
+`,
             image: {
-              url: `https://i.imgur.com/PubyvvH.gif`,
+              url: `https://i.imgur.com/xjRqxvX.gif`,
             },
-            color: 0xabdd64,
+            footer: {
+              text: "MarkBot™",
+              icon_url: "https://cdn.discordapp.com/avatars/954363341051154522/5ae01d400f8d6c534df315798bd55751.webp?size=1536",
+            },
+            color: 0xabdd65,
           }],
           allowed_mentions: { users: [userId] },
         }),

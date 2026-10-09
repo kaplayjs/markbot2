@@ -9,6 +9,7 @@ crons = ["* * * * *"]
 WELCOME_GUILD_ID = "883781994583056384"
 WELCOME_CHANNEL_ID = "926198028061253672"
 WELCOME_GATEWAY_REVISION = "1"
+WELCOME_TEST_COMMAND = "markbot.test.join"
 
 [[durable_objects.bindings]]
 name = "WELCOME_GATEWAY"
@@ -31,7 +32,6 @@ persist = true
 
 [observability.issue_detection]
 enabled = false
-
 
 # [secrets]
 # DISCORD_TOKEN
