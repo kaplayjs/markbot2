@@ -4,20 +4,17 @@
 
 import {
     type APIApplicationCommandInteraction,
-    APIApplicationCommandInteractionDataOption,
-    APIApplicationCommandInteractionDataUserOption,
+    type APIApplicationCommandInteractionDataUserOption,
     type APIInteractionResponse,
     type APIPingInteraction,
     ApplicationCommandOptionType,
-    ComponentType,
     InteractionResponseType,
     InteractionType,
-    MessageFlags,
 } from "discord-api-types/v10";
 import { verifyKey } from "discord-interactions";
-import { AutoRouter } from "itty-router";
+import { AutoRouter, type IRequest } from "itty-router";
 import { ABOUT_CMD, API_CMD, HELPEDBY_CMD, KAT_CMD } from "./commands.js";
-import { apiUrl, getCuteCatUrl } from "./reddit.js";
+import { getCuteCatUrl } from "./reddit.js";
 import { getDB } from "./db.js";
 
 class JsonResponse extends Response {
@@ -37,7 +34,7 @@ class JsonResponse extends Response {
     }
 }
 
-const router = AutoRouter();
+const router = AutoRouter<IRequest, [Env, ExecutionContext]>();
 
 type JSDocTag = {
     name: string;
@@ -485,7 +482,7 @@ router.post("/", async (request, env) => {
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));
 
-async function verifyDiscordRequest(request, env) {
+async function verifyDiscordRequest(request: Request, env: Env) {
     const signature = request.headers.get("x-signature-ed25519");
     const timestamp = request.headers.get("x-signature-timestamp");
     const body = await request.text();
@@ -513,7 +510,7 @@ const server = {
     verifyDiscordRequest,
     fetch: router.fetch,
     // Cron trigger: makes sure the welcome gateway connection is alive.
-    async scheduled(_event: unknown, env: any) {
+    async scheduled(_event: ScheduledController, env: Env) {
         const response = await env.WELCOME_GATEWAY.get(env.WELCOME_GATEWAY.idFromName("main"))
             .fetch("https://welcome/");
         if (!response.ok) {

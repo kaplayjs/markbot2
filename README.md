@@ -12,6 +12,10 @@ pnpm install
 
 ## Development
 
+Run `npm run typecheck` to check TypeScript across the Worker and CLI scripts.
+Run `npm run cf:types` after changing `wrangler.toml` or upgrading Wrangler to
+refresh the Cloudflare environment and runtime declarations.
+
 You can run the bot locally by using:
 
 ```bash

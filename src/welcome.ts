@@ -106,7 +106,7 @@ export class WelcomeGateway extends DurableObject<Env> {
     }
     if (this.ws || Date.now() < this.recovery.retryAt) return;
     if (!this.connecting) {
-      this.connecting = this.connect().catch(async (error) => {
+      this.connecting = this.connectGateway().catch(async (error) => {
         console.error("[gateway] connection attempt failed:", error);
         await this.scheduleReconnect("Gateway connection failed");
       }).finally(() => {
@@ -116,7 +116,7 @@ export class WelcomeGateway extends DurableObject<Env> {
     await this.connecting;
   }
 
-  private async connect() {
+  private async connectGateway() {
     const url = new URL(this.session?.url ?? GATEWAY_URL);
     url.protocol = "https:";
     url.searchParams.set("v", "10");

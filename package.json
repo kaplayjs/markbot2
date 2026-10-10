@@ -6,6 +6,8 @@
   "private": true,
   "main": "src/server.js",
   "scripts": {
+    "typecheck": "tsc --noEmit",
+    "cf:types": "wrangler types --strict-vars=false",
     "start": "wrangler dev",
     "ngrok": "ngrok http 8787",
     "fix": "eslint --fix '**/*.js'",
@@ -31,6 +33,7 @@
   "devDependencies": {
     "@eslint/js": "^9.1.1",
     "@kaplayjs/dprint-config": "^1.2.0",
+    "@types/node": "^26.6.5",
     "c8": "^10.1.2",
     "chai": "^5.0.0",
     "dotenv": "^16.0.3",
@@ -43,6 +46,7 @@
     "prettier": "^3.2.5",
     "sinon": "^22.1.0",
     "supabase": "^2.70.5",
+    "typescript": "^7.0.2",
     "wrangler": "^4.13.2"
   },
   "allowScripts": {
