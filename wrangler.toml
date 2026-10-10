@@ -8,6 +8,8 @@ crons = ["* * * * *"]
 [vars]
 WELCOME_GUILD_ID = "883781994583056384"
 WELCOME_CHANNEL_ID = "926198028061253672"
+# Set to the channel ID where member departure messages should be sent.
+LEAVE_CHANNEL_ID = "900101147572989982"
 WELCOME_GATEWAY_REVISION = "1"
 WELCOME_TEST_COMMAND = "markbot.test.join"
 

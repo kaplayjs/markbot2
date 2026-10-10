@@ -4,6 +4,7 @@ type Env = {
   DISCORD_TOKEN: string;
   WELCOME_GUILD_ID: string;
   WELCOME_CHANNEL_ID: string;
+  LEAVE_CHANNEL_ID?: string;
   WELCOME_GATEWAY_REVISION?: string;
   WELCOME_TEST_COMMAND?: string;
 };
@@ -45,6 +46,7 @@ export class WelcomeGateway extends DurableObject<Env> {
             env.DISCORD_TOKEN,
             env.WELCOME_GUILD_ID,
             env.WELCOME_CHANNEL_ID,
+            env.LEAVE_CHANNEL_ID,
             env.WELCOME_GATEWAY_REVISION,
             INTENTS,
             GATEWAY_URL,
@@ -294,10 +296,27 @@ export class WelcomeGateway extends DurableObject<Env> {
         await this.ctx.storage.setAlarm(Date.now() + WATCHDOG_MS);
         console.log(`[gateway] ${t}`);
       }
+      const leavingUser = t === "GUILD_MEMBER_REMOVE"
+        ? d.user
+        : t === "MESSAGE_CREATE"
+          && d.content?.trim().toLowerCase() === "markbot.test.leave"
+          ? d.author
+          : null;
+      if (
+        leavingUser && !leavingUser.bot
+        && d.guild_id === this.env.WELCOME_GUILD_ID
+        && this.env.LEAVE_CHANNEL_ID
+      ) {
+        this.ctx.waitUntil(
+          this.leave(leavingUser).catch((error) => {
+            console.error("[gateway] leave message failed:", error);
+          }),
+        );
+      }
       const user = t === "GUILD_MEMBER_ADD"
         ? d.user
         : t === "MESSAGE_CREATE"
-          && d.content?.trim().toLowerCase() === "preview.test.join"
+          && d.content?.trim().toLowerCase() === "markbot.test.join"
           ? d.author
           : null;
       if (d.guild_id === this.env.WELCOME_GUILD_ID && user && !user.bot) {
@@ -307,6 +326,26 @@ export class WelcomeGateway extends DurableObject<Env> {
           }),
         );
       }
+    }
+  }
+
+  private async leave(user: { id: string; username: string; }) {
+    const response = await fetch(
+      `https://discord.com/api/v10/channels/${this.env.LEAVE_CHANNEL_ID}/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bot ${this.env.DISCORD_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: `<:ghosty:1271977116442820669> <@${user.id}> (${user.username}) has left the server. A new ghosty was born. `,
+          allowed_mentions: { parse: [] },
+        }),
+      },
+    );
+    if (!response.ok) {
+      throw new Error(`Leave message failed: HTTP ${response.status}`);
     }
   }
 
