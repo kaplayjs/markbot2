@@ -16,6 +16,18 @@ Run `npm run typecheck` to check TypeScript across the Worker and CLI scripts.
 Run `npm run cf:types` after changing `wrangler.toml` or upgrading Wrangler to
 refresh the Cloudflare environment and runtime declarations.
 
+`/api query` suggests matching API names as you type, using `version` (v4000
+by default). Enter a type followed by a dot, such as `Vec2.`, to preview its
+members and their descriptions. After deploying changes to command options,
+run `npm run register` to update the global commands in Discord.
+
+For production, set the production bot's `DISCORD_TOKEN` and
+`DISCORD_APPLICATION_ID` in `.vars`, then run `npm run deploy:prod` to deploy
+and register its commands. Run `npm run register:prod` to register without
+deploying. Production registration loads `.vars` only; preview registration
+(`npm run register`) loads `.dev.vars`. Both files are ignored by Git, and
+environment variables take precedence so CI can supply credentials as secrets.
+
 You can run the bot locally by using:
 
 ```bash

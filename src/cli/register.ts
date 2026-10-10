@@ -10,7 +10,9 @@ import { ABOUT_CMD, API_CMD, HELPEDBY_CMD, KAT_CMD } from "../commands.ts";
  * to be run once.
  */
 
-dotenv.config({ path: ".dev.vars" });
+const production = process.argv.includes("--prod");
+const credentialsPath = production ? ".vars" : ".dev.vars";
+dotenv.config({ path: credentialsPath });
 
 const token = process.env.DISCORD_TOKEN;
 const applicationId = process.env.DISCORD_APPLICATION_ID;
@@ -26,9 +28,9 @@ if (!applicationId) {
 
 const rest = new REST({ version: "10" }).setToken(token);
 
-rest.put(Routes.applicationCommands(applicationId), {
+await rest.put(Routes.applicationCommands(applicationId), {
     body: [KAT_CMD, ABOUT_CMD, API_CMD, HELPEDBY_CMD],
 }).then((r) => {
-    console.log("Registered global commands");
+    console.log(`Registered ${production ? "production" : "preview"} global commands for ${applicationId}`);
     console.log(JSON.stringify(r, null, 2));
 });

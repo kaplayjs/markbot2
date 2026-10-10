@@ -4,6 +4,7 @@
 
 import {
     type APIApplicationCommandInteraction,
+    type APIApplicationCommandAutocompleteInteraction,
     type APIApplicationCommandInteractionDataUserOption,
     type APIInteractionResponse,
     type APIPingInteraction,
@@ -16,6 +17,7 @@ import { AutoRouter, type IRequest } from "itty-router";
 import { ABOUT_CMD, API_CMD, HELPEDBY_CMD, KAT_CMD } from "./commands.js";
 import { getCuteCatUrl } from "./reddit.js";
 import { getDB } from "./db.js";
+import { getApiQueryChoices } from "./api-autocomplete.js";
 
 class JsonResponse extends Response {
     constructor(
@@ -89,6 +91,38 @@ router.post("/", async (request, env) => {
         // required to configure the webhook in the developer portal.
         return new JsonResponse({
             type: InteractionResponseType.Pong,
+        });
+    }
+
+    if (interaction.type === InteractionType.ApplicationCommandAutocomplete) {
+        const query = interaction.data.options.find((option) =>
+            option.name === "query"
+            && option.type === ApplicationCommandOptionType.String
+            && option.focused
+        );
+        const version = interaction.data.options.find((option) =>
+            option.name === "version"
+
+            && option.type === ApplicationCommandOptionType.String
+        );
+        let choices: { name: string; value: string; }[] = [];
+        if (interaction.data.name === API_CMD.name
+            && query?.type === ApplicationCommandOptionType.String) {
+            try {
+                choices = await getApiQueryChoices(
+                    query.value,
+                    version?.type === ApplicationCommandOptionType.String
+                        ? version.value
+                        : "v4000",
+                );
+            }
+            catch (error) {
+                console.warn("[api] autocomplete failed:", error);
+            }
+        }
+        return new JsonResponse({
+            type: InteractionResponseType.ApplicationCommandAutocompleteResult,
+            data: { choices },
         });
     }
 
@@ -501,6 +535,7 @@ async function verifyDiscordRequest(request: Request, env: Env) {
     return {
         interaction: JSON.parse(body) as
             | APIApplicationCommandInteraction
+            | APIApplicationCommandAutocompleteInteraction
             | APIPingInteraction,
         isValid: true,
     };

@@ -23,6 +23,7 @@ export const API_CMD: RESTPostAPIChatInputApplicationCommandsJSONBody = {
                 "The API method to get info. Use \"TypeName\" or \"ctx.methodName\".",
             type: ApplicationCommandOptionType.String,
             required: true,
+            autocomplete: true,
         },
         {
             name: "version",

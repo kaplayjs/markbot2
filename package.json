@@ -13,9 +13,9 @@
     "fix": "eslint --fix '**/*.js'",
     "lint": "eslint '**/*.js'",
     "register": "node --experimental-strip-types src/cli/register.ts",
+    "register:prod": "node --experimental-strip-types src/cli/register.ts --prod",
     "clear": "node --experimental-strip-types src/cli/clear.ts",
     "deploy": "wrangler deploy",
-    "deploy:preview": "wrangler deploy --name markbot-preview",
     "fmt": "dprint fmt",
     "db:gentypes": "npx supabase gen types typescript --project-id jlhwsrgsgdubxtcgieli --schema public > src/types/database.types.ts"
   },
